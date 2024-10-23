@@ -66,7 +66,6 @@ class ConfluenceClient:
 
             for item in data.get('results', []):
                 content = item.get('body', {}).get('view', {}).get('value', '')
-                # print(content)
                 if content:
                     clean_content = self._clean_html_content(content)
                     results.append({

@@ -40,7 +40,7 @@ class ConfluenceAPI:
         """
         url = f"{self.base_url}/rest/api/content/search"
         params = {
-            'cql': f'text ~ "{query}"',
+            'cql': f'text ~ \'{query}\'',
             'expand': 'body.view',
             'limit': limit
         }
