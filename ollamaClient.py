@@ -1,16 +1,15 @@
 from typing import List, Dict, Optional
 import requests
-
 from confluence_client import ConfluenceClient
 
-
-# from .client import ConfluenceClient
+MODEL = "llama2"
+BASE_URL = "http://localhost:11434"
 
 
 class OllamaClient:
     """Класс для работы с Ollama API с использованием данных из Confluence"""
 
-    def __init__(self, base_url: str = "http://localhost:11434", model: str = "llama2"):
+    def __init__(self, base_url: str = BASE_URL, model: str = MODEL):
         """
         Инициализация клиента Ollama
 
@@ -64,24 +63,25 @@ class OllamaClient:
             context += f"Содержание: {result['content']}\n\n"
         return context
 
-    def generate_with_rag(self, query: str, max_confluence_results: int = 3) -> Optional[str]:
+    def generate_with_rag(self, confluence_query: str, llm_query: str, max_confluence_results: int = 3) -> Optional[str]:
         """
         Генерация ответа с использованием RAG-подхода
 
         Args:
-            query (str): Пользовательский запрос
+            confluence_query (str): Пользовательский запрос в confluence
+            llm_query (str): Пользовательский запрос в llm
             max_confluence_results (int): Максимальное количество результатов из Confluence
 
         Returns:
             Optional[str]: Ответ от модели или None в случае ошибки
         """
         # Поиск релевантных документов в Confluence
-        confluence_results = self.confluence_client.search(query, max_confluence_results)
+        confluence_results = self.confluence_client.search(confluence_query, max_confluence_results)
 
         if not confluence_results:
             print("Не найдено релевантных документов в Confluence")
             # Делаем запрос к модели без дополнительного контекста
-            return self._make_ollama_request(query)
+            return self._make_ollama_request(llm_query)
 
         # Форматируем контекст из результатов Confluence
         context = self._format_context(confluence_results)
@@ -90,10 +90,10 @@ class OllamaClient:
         enriched_prompt = (
             f"На основе следующего контекста ответь на вопрос.\n\n"
             f"{context}\n"
-            f"Вопрос: {query}\n"
+            f"Вопрос: {llm_query}\n"
             f"Ответ:"
         )
-
+        print(enriched_prompt)
         # Отправляем обогащенный промпт к Ollama
         return self._make_ollama_request(enriched_prompt)
 
